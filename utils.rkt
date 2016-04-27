@@ -18,4 +18,34 @@
 (define (sum-of-nrange ns ne)
   (for/sum ([n (in-range ns (+ ne 1))]) (expt 2 n)))
 
+(define (bytes->number bytes)
+  (define length (bytes-length bytes))
+  (let loop ([n 0] [factor 1] [num 0])
+    (if (= n length)
+        num
+        (loop (+ 1 n)
+              (* factor 256)
+              (+ num (* (bytes-ref bytes n)
+                        factor))))))
+ 
+(define (number->bytes byte-length num)
+  (define bytes (make-bytes byte-length))
+  (let loop ([n 0] [num num])
+    (if (= n byte-length)
+        bytes
+        (let-values ([(quot rem) (quotient/remainder num 256)])
+          (bytes-set! bytes n rem)
+          (loop (+ 1 n) quot)))))
 
+; http://stackoverflow.com/questions/15871042/how-do-i-find-the-index-of-an-element-in-a-list-in-racket
+(define (index-of-car lst ele)
+  (let loop([lst lst] [idx 0])
+    (cond ([empty? lst] #f)
+          ([equal? (car (first lst)) ele] idx)
+          (else (loop (rest lst) (add1 idx))))))
+
+(define (index-of-cdr lst ele)
+  (let loop([lst lst] [idx 0])
+    (cond ([empty? lst] #f)
+          ([equal? (cdr (first lst)) ele] idx)
+          (else (loop (rest lst) (add1 idx))))))

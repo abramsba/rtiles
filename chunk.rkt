@@ -2,17 +2,14 @@
 
 (require data/bit-vector)
 
-(require "utils.rkt")
-(require "vec.rkt")
-(require "line.rkt")
+(require "utils.rkt" "vec.rkt" "line.rkt")
 
-(provide (all-defined-out))
-(provide chunk-immutable%)
-(provide chunk-mutable%)
+(provide (all-defined-out) chunk-immutable% chunk-mutable%)
 
 (define chunk-base%
   (class object%
     (init-field size data)
+    (inspect (make-inspector))
     (super-new)
     (define/public (size?) size)
     (define/public (data?) data)
@@ -48,6 +45,7 @@
   (class chunk-base%
     (super-new)
     (inherit-field size data)
+    (inspect (make-inspector))
     (define/public (->immutable)
       (new chunk-immutable% [size size][data data]))
     (define/public (data* d) (set! data d))
@@ -79,6 +77,7 @@
   (class chunk-base%
     (super-new)
     (inherit-field size data)
+    (inspect (make-inspector))
     (define/public (->mutable)
       (new chunk-mutable% [size size][data data]))
     (define/override (or . chunks)
