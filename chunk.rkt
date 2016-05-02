@@ -118,6 +118,11 @@
      [vecs (line->vec flat-line)])
     (vec->chunk size mutable vecs)))
 
-
+(define (vec->chunk* chk . vec)
+  (let*
+      ([flat-vec (flatten vec)]
+       [size (send chk size?)]
+       [vec-res (apply bitwise-ior (map (lambda (v) (expt 2 (+ (* size (vec-y v)) (vec-x v)))) flat-vec))])
+    (send chk data* vec-res)))
 
 
