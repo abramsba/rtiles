@@ -12,8 +12,8 @@
      [move-block #f]
      [los-block #f]
      [character #\ ]
-     [bg-color "Black"]
-     [fg-color "White"]
+     [bg-color "black"]
+     [fg-color "white"]
      [offset-x 0]
      [offset-y 0])
     (super-new)
@@ -28,6 +28,9 @@
     (define/public (zindex?) zindex)
     (define/public (zindex! z)
       (set! zindex z))
+    (define/public (character?) character)
+    (define/public (character! c)
+      (set! character c))
     (define/public (locked?)
       (let-values ([(cls skp) (object-info chunk)])
         (equal? cls chunk-immutable%)))
@@ -80,6 +83,10 @@
               (else (loop (+ 1 idx))))))
     (define/public (remove-layer ly)
       (set! layers (remove ly layers)))
+    (define/public (->list)
+      (sort layers
+            (lambda (x y)
+              (< (send x zindex?) (send y zindex?)))))
     (define/public (->jsexpr)
       (let
           ([json_layers (for/list ([l layers]) (send l ->jsexpr))])

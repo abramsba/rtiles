@@ -6,7 +6,6 @@
   "vec.rkt"
   "line.rkt")
 
-
 (define (mouse->vec e)
   (vec (send e get-x) (send e get-y)))
 
@@ -14,6 +13,25 @@
   (vec
    (truncate (/ (vec-x v) s))
    (truncate (/ (vec-y v) s))))
+
+(define (draw-zone dc z ts)
+  (for ([zl (send z ->list)])
+    (draw-zone-layer dc zl ts)))
+
+(define (draw-zone-layer dc zl ts)
+  (let*
+      ([chk (send zl chunk?)]
+       [sz (send chk size?)]
+       [px (* sz ts)]
+       [poslist (send chk ->veclist)]
+       [fnt (make-font #:size 8)])
+    (for ([p poslist])
+      (let*
+          ([x (* (vec-x p) ts)]
+           [y (* (vec-y p) ts)])
+        (send dc set-text-foreground (send zl fg-color?))
+        (send dc draw-text (string (send zl character?)) x y)
+        ))))
 
 #|
   The new file dialog
@@ -63,9 +81,6 @@
        [parent file-menu]
        [callback (lambda (menu control) #f)]))
 
-
-(send map-frame show #t)
-
 (define new-zone-frame
   (new frame%
        [label "New..."]
@@ -86,43 +101,58 @@
        [callback (lambda (menu control)
                    (send new-zone-frame show #f)
                    (send map-frame set-label (format "Map Editor: ~a" (send new-zone-id get-value))))]))
+
 (define new-zone-cancel
   (new button%
        [label "Cancel"]
        [parent new-zone-hori-frame]
        [callback (lambda (menu control) (send new-zone-frame show #f))]))
 
-
-#|
-(define layer-frame
-  (new frame%
-       [label "Layers"]
-       [stretchable-width #f]
-       [stretchable-height #f]
-       [min-width 400]
-       [min-height 200]))
-
-(define lb-layers
-  (new list-box%
-       [label ""]
-       [choices (list)]
-       [parent layer-frame]))
-
-(define layer-buttons
-  (new horizontal-panel%
-       [parent layer-frame]
-       [alignment '(center center)]))
-
-(define lb-add
-  (new button%
-       [label "Add"]
-       [parent layer-buttons]))
-
-(define lb-remove
-  (new button%
-       [label "Remove"]
-       [parent layer-buttons]))
-
-(send layer-frame show #t)
-(send map-frame show #t)
-|#
+(let*
+    ([c1 (new chunk-mutable% [size 32][data 0])]
+     [c2 (new chunk-mutable% [size 32][data 0])]
+     [c3 (new chunk-mutable% [size 32][data 0])]
+     [c4 (new chunk-mutable% [size 32][data 0])]
+     [c5 (new chunk-mutable% [size 32][data 0])]
+     [l1 (new zone-layer% [id 'l1][chunk c1][zindex 1])]
+     [l2 (new zone-layer% [id 'l2][chunk c2][zindex 2])]
+     [l3 (new zone-layer% [id 'l3][chunk c3][zindex 3])]
+     [l4 (new zone-layer% [id 'l5][chunk c4][zindex 4])]
+     [l5 (new zone-layer% [id 'l6][chunk c5][zindex 5])]
+     [zn ((lambda()
+             (let
+                 ([newz (new zone%[id 'test])])
+               (vec->chunk* c1
+                            (for/list ([i (random 15 100)])
+                              (vec (random 1 31) (random 1 31))))
+               (vec->chunk* c2
+                            (for/list ([i (random 15 100)])
+                              (vec (random 1 31) (random 1 31))))
+               (vec->chunk* c3
+                            (for/list ([i (random 15 100)])
+                              (vec (random 1 31) (random 1 31))))
+               (vec->chunk* c4
+                            (for/list ([i (random 15 100)])
+                              (vec (random 1 31) (random 1 31))))
+               (vec->chunk* c5
+                            (for/list ([i (random 15 100)])
+                              (vec (random 1 31) (random 1 31))))
+               (send l1 character! #\#)
+               (send l1 fg-color! "red")
+               (send l2 character! #\u039E)
+               (send l2 fg-color! "green")
+               (send l3 character! #\u0414)
+               (send l3 fg-color! "aqua")
+               (send l4 character! #\uFEB6)
+               (send l4 fg-color! "white")
+               (send l5 character! #\u03BB)
+               (send l5 fg-color! "orange")
+               (send newz add-layer l1)
+               (send newz add-layer l2)
+               (send newz add-layer l3)
+               (send newz add-layer l4)
+               (send newz add-layer l5)
+               newz)))])
+  (define bmp (make-bitmap (* 32 16) (* 32 16)))
+  (draw-zone (new bitmap-dc% [bitmap bmp]) zn 16)
+  bmp)
