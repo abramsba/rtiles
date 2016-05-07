@@ -6,6 +6,74 @@
   "vec.rkt"
   "line.rkt")
 
+(define target-zone (new zone% [id 'new]))
+
+#|
+Place a tile at a given location
+dc = drawing context
+chr = character
+fnt = font
+fg-c = foreground color
+fg-a = foreground alpha
+bg-c = background color
+bg-a = background alpha
+x = the X tile
+y = the Y tile
+w = the width of a tile
+|#
+(define (draw-tile dc chr fnt fg-c fg-a bg-c bg-a x y w)
+  (send dc set-alpha bg-a)
+  (send dc set-brush bg-c 'solid)
+  (send dc set-pen "black" 1 'transparent)
+  (send dc draw-rectangle (* x w) (* y w) w w)
+  (send dc set-font fnt)
+  (send dc set-alpha fg-a)
+  (send dc set-brush fg-c 'solid)
+  (send dc draw-text (string chr) x y))
+
+#|
+Erases a tile at a given location, replacing it with a black square
+dc = drawing context
+x = the X tile
+y = the Y tile
+w = the width of a tile
+|#
+(define (erase-tile dc x y w)
+  (send dc set-brush "black" 'solid)
+  (send dc draw-rectangle (* x w) (* y w) w w))
+
+#|
+Return the chunk for a layer by ID
+lid = layer id
+|#
+(define (get-chunk lid)
+  (send (send target-zone get-layer lid) chunk?))
+
+#|
+Returns the layer by the ID
+lid = layer id
+|#
+(define (get-layer lid)
+  (send target-zone get-layer lid))
+
+#|
+Creates a new layer
+lid = layer id
+size = amount of tiles squared
+|#
+(define (create-layer lid size)
+  (let*
+      ([chk (new chunk-mutable% [size size][data 0])]
+       [lyr (new zone-layer% [id lid][chunk chk][zindex 0])])
+    (send target-zone add-layer lyr)))
+
+#|
+Deletes a layer
+|#
+(define (remove-layer lid)
+  (send target-zone remove-layer lid))
+
+
 (define (mouse->vec e)
   (vec (send e get-x) (send e get-y)))
 
@@ -14,7 +82,16 @@
    (truncate (/ (vec-x v) s))
    (truncate (/ (vec-y v) s))))
 
+(define drawn #f)
+
+(define (draw-cb dc)
+  (draw-zone dc target-zone 16))
+
 (define (draw-zone dc z ts)
+  (define px (* ts 64))
+  (send dc set-pen "black" 1 'transparent)
+  (send dc set-brush "black" 'solid)
+  (send dc draw-rectangle 0 0 px px)  
   (for ([zl (send z ->list)])
     (draw-zone-layer dc zl ts)))
 
@@ -24,24 +101,25 @@
        [sz (send chk size?)]
        [px (* sz ts)]
        [poslist (send chk ->veclist)]
-       [fnt (make-font #:size 8)])
+       [fnt (make-font #:size 10 #:family 'roman)])
+    (send dc set-font fnt)
     (for ([p poslist])
       (let*
           ([x (* (vec-x p) ts)]
            [y (* (vec-y p) ts)])
+        (send dc set-alpha (send zl bg-alpha?))
+        (send dc set-brush (send zl bg-color?) 'solid)
+        (send dc draw-rectangle x y ts ts)
+        (send dc set-alpha (send zl fg-alpha?))
         (send dc set-text-foreground (send zl fg-color?))
         (send dc draw-text (string (send zl character?)) x y)
         ))))
 
-#|
-  The new file dialog
-|#
-
 (define map-frame
   (new frame%
        [label "Map Editor - NEW"]
-       [stretchable-width #f]
-       [stretchable-height #f]
+       [stretchable-width #t]
+       [stretchable-height #t]
        [min-width 900]
        [min-height 600]))
 (define map-canvas-def%
@@ -52,7 +130,11 @@
          (displayln (vec->grid (mouse->vec e) 24))]))
     (define/override (on-char e) (display e))
     (super-new)))
-(define map-canvas (new map-canvas-def% [parent map-frame]))
+(define map-canvas (new map-canvas-def%
+                        [parent map-frame]
+                        [style '(no-autoclear vscroll hscroll)]
+                        [paint-callback (lambda (can dc) (draw-cb dc))]))
+(send map-canvas init-auto-scrollbars 1024 1024 0 0)
 
 (define main-menubar
   (new menu-bar%
@@ -109,50 +191,56 @@
        [callback (lambda (menu control) (send new-zone-frame show #f))]))
 
 (let*
-    ([c1 (new chunk-mutable% [size 32][data 0])]
-     [c2 (new chunk-mutable% [size 32][data 0])]
-     [c3 (new chunk-mutable% [size 32][data 0])]
-     [c4 (new chunk-mutable% [size 32][data 0])]
-     [c5 (new chunk-mutable% [size 32][data 0])]
+    ([cz 64]
+     [c1 (new chunk-mutable% [size cz][data 0])]
+     [c2 (new chunk-mutable% [size cz][data 0])]
+     [c3 (new chunk-mutable% [size cz][data 0])]
+     [c4 (new chunk-mutable% [size cz][data 0])]
+     [c5 (new chunk-mutable% [size cz][data 0])]
      [l1 (new zone-layer% [id 'l1][chunk c1][zindex 1])]
      [l2 (new zone-layer% [id 'l2][chunk c2][zindex 2])]
      [l3 (new zone-layer% [id 'l3][chunk c3][zindex 3])]
      [l4 (new zone-layer% [id 'l5][chunk c4][zindex 4])]
      [l5 (new zone-layer% [id 'l6][chunk c5][zindex 5])]
      [zn ((lambda()
-             (let
-                 ([newz (new zone%[id 'test])])
+             (let ()
                (vec->chunk* c1
-                            (for/list ([i (random 15 100)])
-                              (vec (random 1 31) (random 1 31))))
+                            (for/list ([i (random 55 400)])
+                              (vec (random cz) (random cz))))
                (vec->chunk* c2
-                            (for/list ([i (random 15 100)])
-                              (vec (random 1 31) (random 1 31))))
+                            (for/list ([i (random 55 400)])
+                              (vec (random cz) (random cz))))
                (vec->chunk* c3
-                            (for/list ([i (random 15 100)])
-                              (vec (random 1 31) (random 1 31))))
+                            (for/list ([i (random 55 400)])
+                              (vec (random cz) (random cz))))
                (vec->chunk* c4
-                            (for/list ([i (random 15 100)])
-                              (vec (random 1 31) (random 1 31))))
+                            (for/list ([i (random 55 400)])
+                              (vec (random cz) (random cz))))
                (vec->chunk* c5
-                            (for/list ([i (random 15 100)])
-                              (vec (random 1 31) (random 1 31))))
-               (send l1 character! #\#)
+                            (for/list ([i (random 55 400)])
+                              (vec (random cz) (random cz))))
+               (send l1 character! #\+)
                (send l1 fg-color! "red")
-               (send l2 character! #\u039E)
+               (send l1 bg-color! "yellow")
+               (send l1 bg-alpha! 0.25)
+               (send l2 character! #\#)
                (send l2 fg-color! "green")
-               (send l3 character! #\u0414)
+               (send l2 bg-color! "purple")
+               (send l2 bg-alpha! 0.3)
+               (send l3 character! #\-)
                (send l3 fg-color! "aqua")
-               (send l4 character! #\uFEB6)
-               (send l4 fg-color! "white")
-               (send l5 character! #\u03BB)
+               (send l3 bg-color! "red")
+               (send l3 bg-alpha! 0.5)
+               (send l4 character! #\0)
+               (send l4 fg-color! "black")
+               (send l5 character! #\X)
                (send l5 fg-color! "orange")
-               (send newz add-layer l1)
-               (send newz add-layer l2)
-               (send newz add-layer l3)
-               (send newz add-layer l4)
-               (send newz add-layer l5)
-               newz)))])
-  (define bmp (make-bitmap (* 32 16) (* 32 16)))
-  (draw-zone (new bitmap-dc% [bitmap bmp]) zn 16)
-  bmp)
+               (send target-zone add-layer l1)
+               (send target-zone add-layer l2)
+               (send target-zone add-layer l3)
+               (send target-zone add-layer l4)
+               (send target-zone add-layer l5))))])
+  (send map-frame show #t)
+  (sleep/yield 1)
+  (draw-cb (send map-canvas get-dc))
+  )

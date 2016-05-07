@@ -14,6 +14,8 @@
      [character #\ ]
      [bg-color "black"]
      [fg-color "white"]
+     [bg-alpha 1.0]
+     [fg-alpha 1.0]
      [offset-x 0]
      [offset-y 0])
     (super-new)
@@ -46,6 +48,12 @@
     (define/public (bg-color?) bg-color)
     (define/public (bg-color! c)
       (set! bg-color c))
+    (define/public (fg-alpha?) fg-alpha)
+    (define/public (fg-alpha! a)
+      (set! fg-alpha a))
+    (define/public (bg-alpha?) bg-alpha)
+    (define/public (bg-alpha! a)
+      (set! bg-alpha a))
     (define/public (offset-x?) offset-x)
     (define/public (offset-x! x)
       (set! offset-x x))
