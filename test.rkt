@@ -17,7 +17,7 @@
 (define (random-layer id size)
   (let*
       ([maxp (* size size)]
-       [rndp (random (/ maxp 8))]
+       [rndp (random (/ maxp 4))]
        [colors (send the-color-database get-names)]
        [chars ascii-chars]
        [fgc (get-random colors)]
@@ -43,22 +43,7 @@
       (send zone add-layer l))
     zone))
 
-(define rnd-zone (random-zone 'whatever 24 8))
+(define rnd-zone (random-zone 'whatever 128 3))
 (define lyrs (send rnd-zone ->list))
-(send rnd-zone ->bitmap 32)
-(send rnd-zone ->bitmap 24)
-(send rnd-zone ->bitmap 16)
-(send rnd-zone ->bitmap 12)
-(send rnd-zone ->bitmap 8)
-(for/list
-    ([l (send rnd-zone ->list)])
-  (let*
-     ([ts 12]
-      [ps (* ts (send l size?))]
-      [bmp (make-bitmap ps ps)]
-      [dc (new bitmap-dc% [bitmap bmp])])
-  (send dc set-brush "black" 'solid)
-  (send dc draw-rectangle 0 0 ps ps)
-  (send dc draw-bitmap (send l ->bitmap ts) 0 0)
-    bmp))
-  
+(send rnd-zone ->bitmap 20)
+

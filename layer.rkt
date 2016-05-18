@@ -73,13 +73,19 @@
         (send dc set-pen "black" 1 'transparent)
         (send dc set-brush bg-color 'solid)
         (send dc set-font fnt)
-        (for ([v (send chunk ->veclist)])
-          (let ([x (* ts (vec-x v))] [y (* ts (vec-y v))])
+        (andmap
+         (lambda (v)
+           (let*
+               ([x (vec-x v)]
+                [y (vec-y v)]
+                [px (* ts x)]
+                [py (* ts y)])
             (send dc set-alpha bg-alpha)
-            (send dc draw-rectangle x y ts ts)
+            (send dc draw-rectangle px py ts ts)
             (send dc set-alpha fg-alpha)
             (send dc set-text-foreground fg-color)
-            (send dc draw-text (string character) (+ x (/ ts 4)) y)))
+            (send dc draw-text (string character) (+ px (/ ts 4)) py)))
+         (send chunk ->veclist))
         bitmap))
     (define/public (->jsexpr)
       (hasheq 'id (symbol->string id)
