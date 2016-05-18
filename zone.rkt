@@ -16,6 +16,8 @@
         (set! layers (append layers (list ly)))))
     (define/public (size?)
       (apply max (for/list ([l (send this ->list)]) (send l size?))))
+    (define/public (count?)
+      (length layers))
     (define/public (has-layer? ly)
       (not (equal? #f (member ly layers))))
     (define/public (get-layer ly-id)

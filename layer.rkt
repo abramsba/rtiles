@@ -69,7 +69,7 @@
         ([sz (* ts (send chunk size?))]
          [bitmap (make-bitmap sz sz)]
          [dc (new bitmap-dc% [bitmap bitmap])]
-         [fnt (make-font #:size (/ ts 1.4) #:family 'modern)])
+         [fnt (make-font #:size (/ ts 1.8) #:family 'modern)])
         (send dc set-pen "black" 1 'transparent)
         (send dc set-brush bg-color 'solid)
         (send dc set-font fnt)
@@ -79,7 +79,7 @@
             (send dc draw-rectangle x y ts ts)
             (send dc set-alpha fg-alpha)
             (send dc set-text-foreground fg-color)
-            (send dc draw-text (string character) (+ x 2) y)))
+            (send dc draw-text (string character) (+ x (/ ts 4)) y)))
         bitmap))
     (define/public (->jsexpr)
       (hasheq 'id (symbol->string id)

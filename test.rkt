@@ -8,13 +8,18 @@
   "zone.rkt"
   "utils.rkt")
 
+(define ascii-chars
+  (list #\A #\B #\C #\D #\E #\F #\G #\H #\I #\J #\K #\L #\M #\N #\O #\P #\Q #\R #\S #\T #\U #\V #\W #\X #\Y #\Z
+        #\a #\b #\c #\d #\e #\f #\g #\w #\i #\j #\k #\l #\m #\n #\o #\p #\q #\r #\s #\t #\u #\v #\w #\x #\y #\z
+        #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9
+        #\  #\` #\~ #\! #\@ #\$ #\# #\%))
+
 (define (random-layer id size)
   (let*
       ([maxp (* size size)]
-       [rndp (random (/ maxp 32))]
+       [rndp (random (/ maxp 8))]
        [colors (send the-color-database get-names)]
-       ;[chars (list #\u0414 #\u0416 #\u042e #\u04f8 #\u0394 #\u03a9 #\u03a3)]
-       [chars (list #\+ #\/ #\\ #\x #\@ #\P )]
+       [chars ascii-chars]
        [fgc (get-random colors)]
        [bgc (get-random colors)]
        [fga (exact->inexact (/ (random 100) 100))]
@@ -38,16 +43,22 @@
       (send zone add-layer l))
     zone))
 
-(define rnd-zone (random-zone 'whatever 64 26))
-;(send rnd-zone ->bitmap 128)
+(define rnd-zone (random-zone 'whatever 24 8))
 (define lyrs (send rnd-zone ->list))
+(send rnd-zone ->bitmap 32)
+(send rnd-zone ->bitmap 24)
+(send rnd-zone ->bitmap 16)
+(send rnd-zone ->bitmap 12)
 (send rnd-zone ->bitmap 8)
-(for/list ([l lyrs])
+(for/list
+    ([l (send rnd-zone ->list)])
   (let*
-      ([sz 2]
-       [bitmap (make-bitmap (* sz (send l size?)) (* sz (send l size?)))]
-       [dc (new bitmap-dc% [bitmap bitmap])])
-    (send dc set-brush "black" 'solid)
-    (send dc draw-rectangle 0 0 (* sz (send l size?)) (* sz (send l size?)))
-    (send dc draw-bitmap (send l ->bitmap sz) 0 0)
-    bitmap))
+     ([ts 12]
+      [ps (* ts (send l size?))]
+      [bmp (make-bitmap ps ps)]
+      [dc (new bitmap-dc% [bitmap bmp])])
+  (send dc set-brush "black" 'solid)
+  (send dc draw-rectangle 0 0 ps ps)
+  (send dc draw-bitmap (send l ->bitmap ts) 0 0)
+    bmp))
+  

@@ -1,4 +1,5 @@
+# rtiles
 
-Racket code for creating tilemaps
+Create tilemaps using colors and characters.
 
-![screenshot](render.png)
+
