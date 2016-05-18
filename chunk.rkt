@@ -2,7 +2,7 @@
 
 (require data/bit-vector)
 
-(require "utils.rkt" "vec.rkt" "line.rkt")
+(require "utils.rkt" "vec.rkt")
 
 (provide (all-defined-out) chunk-immutable% chunk-mutable%)
 
@@ -112,13 +112,7 @@
       (new chunk-mutable% [size size][data vec-res])
       (new chunk-immutable% [size size][data vec-res]))))
 
-(define (line->chunk size mutable . line)
-  (let*
-    ([flat-line (flatten line)]
-     [vecs (line->vec flat-line)])
-    (vec->chunk size mutable vecs)))
-
-(define (vec->chunk* chk . vec)
+(define (vec->chunk! chk . vec)
   (let*
       ([flat-vec (flatten vec)]
        [size (send chk size?)]

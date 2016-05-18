@@ -3,8 +3,7 @@
 (require 
   racket/draw
   "vec.rkt"
-  "chunk.rkt" 
-  "utils.rkt")
+  "chunk.rkt")
 
 (provide (all-defined-out) layer%)
 
@@ -70,7 +69,7 @@
         ([sz (* ts (send chunk size?))]
          [bitmap (make-bitmap sz sz)]
          [dc (new bitmap-dc% [bitmap bitmap])]
-         [fnt (make-font #:size (/ ts 1.4) #:family 'roman)])
+         [fnt (make-font #:size (/ ts 1.4) #:family 'modern)])
         (send dc set-pen "black" 1 'transparent)
         (send dc set-brush bg-color 'solid)
         (send dc set-font fnt)

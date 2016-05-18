@@ -49,3 +49,8 @@
     (cond ([empty? lst] #f)
           ([equal? (cdr (first lst)) ele] idx)
           (else (loop (rest lst) (add1 idx))))))
+
+(define (get-random lst)
+  (car
+   (shuffle
+    lst)))

@@ -1,11 +1,7 @@
 #lang racket
 
 (require 
-  racket/draw
-  "vec.rkt"
-  "chunk.rkt"
-  "layer.rkt"
-  "utils.rkt")
+  racket/draw)
 
 (provide (all-defined-out) zone%)
 
@@ -39,6 +35,8 @@
           ([sz (* (send this size?) ts)]
            [bitmap (make-bitmap sz sz)]
            [dc (new bitmap-dc% [bitmap bitmap])])
+        (send dc set-brush "black" 'solid)
+        (send dc draw-rectangle 0 0 sz sz)
         (for ([i (send this ->list)])
           (send dc draw-bitmap (send i ->bitmap ts) 0 0))
         bitmap))
