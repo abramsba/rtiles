@@ -9,7 +9,7 @@
 
 (define layer%
   (class object%
-    (init-field id chunk zindex)
+    (init-field id [chunk (new chunk-mutable%)][zindex 0])
     (inspect (make-inspector))
     (field
      [move-block #f]
@@ -64,29 +64,36 @@
     (define/public (offset-y?) offset-y)
     (define/public (offset-y! y)
       (set! offset-y y))
+    
+    (define/public (->tile-bitmap ts [font (make-font #:size (/ ts 1.8) #:family 'modern)])
+      (let*
+          ([t_bmp (make-bitmap ts ts)]
+           [t_dc (new bitmap-dc% [bitmap t_bmp])]
+           [f_y (/ (send font get-size) 4.5)])
+        (send t_dc set-pen "black" 0 'transparent)
+        (send t_dc set-brush bg-color 'solid)
+        (send t_dc set-alpha bg-alpha)
+        (send t_dc draw-rectangle 0 0 ts ts)
+        (send t_dc set-font font)
+        (send t_dc set-text-foreground fg-color)
+        (send t_dc set-alpha fg-alpha)
+        (send t_dc draw-text (string character) (/ ts 4) 0)
+        t_bmp))
+
     (define/public (->bitmap ts)
       (let*
-        ([sz (* ts (send chunk size?))]
-         [bitmap (make-bitmap sz sz)]
-         [dc (new bitmap-dc% [bitmap bitmap])]
-         [fnt (make-font #:size (/ ts 1.8) #:family 'modern)])
-        (send dc set-pen "black" 1 'transparent)
-        (send dc set-brush bg-color 'solid)
-        (send dc set-font fnt)
-        (andmap
-         (lambda (v)
-           (let*
-               ([x (vec-x v)]
-                [y (vec-y v)]
-                [px (* ts x)]
-                [py (* ts y)])
-            (send dc set-alpha bg-alpha)
-            (send dc draw-rectangle px py ts ts)
-            (send dc set-alpha fg-alpha)
-            (send dc set-text-foreground fg-color)
-            (send dc draw-text (string character) (+ px (/ ts 4)) py)))
-         (send chunk ->veclist))
-        bitmap))
+          ([t_bmp (send this ->tile-bitmap ts)]
+           [l_size (* ts (send chunk size?))]
+           [l_bmp (make-bitmap l_size l_size)]
+           [l_dc (new bitmap-dc% [bitmap l_bmp])])
+        (for ([v (send chunk ->veclist)])
+          (define-syntax-rule (vx v)
+            (vec-x v))
+          (define-syntax-rule (vy v)
+            (vec-y v))
+          (send l_dc draw-bitmap t_bmp (* (vx v) ts) (* (vy v) ts)))
+        l_bmp))
+    
     (define/public (->jsexpr)
       (hasheq 'id (symbol->string id)
               'chunk (send chunk ->jsexpr)

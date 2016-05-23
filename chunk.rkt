@@ -8,7 +8,7 @@
 
 (define chunk-base%
   (class object%
-    (init-field size data)
+    (init-field [size 8][data 0])
     (inspect (make-inspector))
     (super-new)
     (define/public (size?) size)
@@ -43,9 +43,9 @@
 
 (define chunk-mutable%
   (class chunk-base%
-    (super-new)
     (inherit-field size data)
     (inspect (make-inspector))
+    (super-new)
     (define/public (->immutable)
       (new chunk-immutable% [size size][data data]))
     (define/public (data* d) (set! data d))
