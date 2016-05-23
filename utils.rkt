@@ -54,3 +54,9 @@
   (car
    (shuffle
     lst)))
+
+(define (json:symbol json key)
+  (string->symbol (hash-ref json key)))
+
+(define (json:value json key)
+  (hash-ref json key))

@@ -17,7 +17,7 @@
 (define (random-layer id size)
   (let*
       ([maxp (* size size)]
-       [rndp (random (/ maxp 4))]
+       [rndp (random (/ maxp 16))]
        [colors (send the-color-database get-names)]
        [chars ascii-chars]
        [fgc (get-random colors)]
@@ -43,7 +43,28 @@
       (send zone add-layer l))
     zone))
 
-(define rnd-zone (random-zone 'whatever 128 3))
-(define lyrs (send rnd-zone ->list))
-(send rnd-zone ->bitmap 20)
+(define size 128)
+(define layers 50)
 
+(define start-zone-gen (current-milliseconds))
+(define rnd-zone (random-zone 'whatever size layers))
+(define end-zone-gen (current-milliseconds))
+
+(define start-bitmap-render (current-milliseconds))
+(send rnd-zone ->bitmap 8)
+(define end-bitmap-render (current-milliseconds))
+
+(define start-zone-renders (current-milliseconds))
+(send rnd-zone ->layers-bitmap 1)
+(define end-zone-renders (current-milliseconds))
+
+(define start-tile-render (current-milliseconds))
+(send rnd-zone ->tiles-bitmap 24)
+(define end-tile-render (current-milliseconds))
+
+(printf "Size: ~a\n" size)
+(printf "Layers: ~a\n" layers)
+(printf "Zone gen: ~a milliseconds\n" (- end-zone-gen start-zone-gen))
+(printf "Bitmap: ~a milliseconds\n" (- end-bitmap-render start-bitmap-render))
+(printf "Layers: ~a milliseconds\n" (- end-zone-renders start-zone-renders))
+(printf "Tiles: ~a milliseconds\n" (- end-tile-render start-tile-render))

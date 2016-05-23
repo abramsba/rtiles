@@ -107,7 +107,7 @@
 (define (vec->chunk size mutable . vec)
   (let*
     ([flat-vec (flatten vec)]
-     [vec-res (apply bitwise-ior (map (lambda (v) (expt 2 (+ (* size (vec-y v)) (vec-x v)))) flat-vec))])
+     [vec-res (apply + (map (lambda (v) (expt 2 (+ (* size (vec-y v)) (vec-x v)))) flat-vec))])
     (if mutable
       (new chunk-mutable% [size size][data vec-res])
       (new chunk-immutable% [size size][data vec-res]))))
@@ -119,4 +119,18 @@
        [vec-res (apply bitwise-ior (map (lambda (v) (expt 2 (+ (* size (vec-y v)) (vec-x v)))) flat-vec))])
     (send chk data* vec-res)))
 
+(define (vec->chunk* chk . vec)
+  (let*
+      ([flat-vec (flatten vec)]
+       [size (send chk size?)]
+       [vec-res (apply + (map (lambda (v) (expt 2 (+ (* size (vec-y v)) (vec-x v)))) flat-vec))])
+    (send chk data* (bitwise-ior vec-res (send chk data?)))))
+
+(define (jsexpr->chunk% json mutable)
+  (let*
+      ([size (json:value json 'size)]
+       [data (json:value json 'data)])
+    (if mutable
+        (new chunk-immutable% [size size] [data data])
+        (new chunk-mutable% [size size] [data data]))))
 
