@@ -17,14 +17,15 @@
     (define/public (alive?) (not (= 0 data)))
 
     (define/public (->nlist)
-      (let iter ([n 0]
+      (let iter ([n (send this bits?)]
                  [output '()])
-        (if (= n (send this bits?))
-            (reverse output)
-            (iter (+ n 1)
-                  (if (< 0 (bitwise-and (expt 2 n) data))
-                      (cons n output)
-                      output)))))
+        (if (zero? n)
+            output
+            (let ([k (- n 1)])
+              (iter k
+                    (if (bitwise-bit-set? data k)
+                        (cons k output)
+                        output))))))
 
     (define/public (->veclist)
       (map (λ (v)

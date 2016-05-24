@@ -3,6 +3,7 @@
 (require
   racket/draw
   "vec.rkt"
+  "line.rkt"
   "chunk.rkt"
   "layer.rkt"
   "zone.rkt"
@@ -17,7 +18,7 @@
 (define (random-layer id size)
   (let*
       ([maxp (* size size)]
-       [rndp (random (/ maxp 16))]
+       [rndp (random (/ maxp 8))]
        [colors (send the-color-database get-names)]
        [chars ascii-chars]
        [fgc (get-random colors)]
@@ -25,6 +26,7 @@
        [fga (exact->inexact (/ (random 100) 100))]
        [bga (exact->inexact (/ (random 100) 100))]
        [chr (get-random chars)]
+       [rs (λ (rs) (random (sub1 size)))]
        [plst (for/list ([i rndp]) (vec (random size) (random size)))]
        [chk (vec->chunk size #t plst)]
        [lyr (new layer% [id id][chunk chk][zindex 0])])
@@ -43,15 +45,16 @@
       (send zone add-layer l))
     zone))
 
-(define size 128)
-(define layers 50)
+(random-seed 0)
+(define size 64)
+(define layers 200)
 
 (define start-zone-gen (current-milliseconds))
 (define rnd-zone (random-zone 'whatever size layers))
 (define end-zone-gen (current-milliseconds))
 
 (define start-bitmap-render (current-milliseconds))
-(send rnd-zone ->bitmap 8)
+(send rnd-zone ->bitmap 14)
 (define end-bitmap-render (current-milliseconds))
 
 (define start-zone-renders (current-milliseconds))
