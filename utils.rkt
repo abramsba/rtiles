@@ -18,6 +18,9 @@
 (define (sum-of-nrange ns ne)
   (for/sum ([n (in-range ns (+ ne 1))]) (expt 2 n)))
 
+(define (list-of-nrange ns ne)
+  (for/list ([n (in-range ns (+ ne 1))]) (expt 2 n)))
+
 (define (bytes->number bytes)
   (define length (bytes-length bytes))
   (let loop ([n 0] [factor 1] [num 0])
@@ -36,6 +39,12 @@
         (let-values ([(quot rem) (quotient/remainder num 256)])
           (bytes-set! bytes n rem)
           (loop (+ 1 n) quot)))))
+
+
+; https://www.reddit.com/r/qeddit/comments/14qra9/racket_decimal_binary_conversion_function/c7fkgsh
+(define (number->binary-string n)
+ (cond [(< n 2) (number->string n)]
+    [else (string-append (number->binary-string (quotient n 2)) (number->string (remainder n 2)))]))
 
 ; http://stackoverflow.com/questions/15871042/how-do-i-find-the-index-of-an-element-in-a-list-in-racket
 (define (index-of-car lst ele)

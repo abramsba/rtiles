@@ -2,7 +2,7 @@
 
 (require data/bit-vector)
 
-(require "utils.rkt" "vec.rkt")
+(require racket/draw "utils.rkt" "vec.rkt")
 
 (provide (all-defined-out) chunk-immutable% chunk-mutable%)
 
@@ -15,20 +15,23 @@
     (define/public (data?) data)
     (define/public (bits?) (expt size 2))
     (define/public (alive?) (not (= 0 data)))
-    (define/public (->string)
-      (string-replace (list->string (insert-every-nth (send this size?) #\N
-        (build-list (send this bits?)
-                            (lambda (i)
-                              (if (= 0 (bitwise-and (expt 2 i) data)) #\_ #\X))))) "N" "\n"))
+
     (define/public (->nlist)
-      (remove* '(#f) (for/list
-                     ([n (build-list (send this bits?)
-                                     (lambda (i) i))])
-            (if (< 0 (bitwise-and (expt 2 n) data)) n #f))))
+      (let iter ([n 0]
+                 [output '()])
+        (if (= n (send this bits?))
+            (reverse output)
+            (iter (+ n 1)
+                  (if (< 0 (bitwise-and (expt 2 n) data))
+                      (cons n output)
+                      output)))))
+
     (define/public (->veclist)
-      (map (lambda (v)
-         (let-values ([(y x) (quotient/remainder v size)])
-                  (vec x y))) (send this ->nlist)))
+      (map (λ (v)
+             (let-values ([(y x) (quotient/remainder v size)])
+               (vec x y)))
+           (send this ->nlist)))
+    
     (define/public (equal? chunk)
       (and (= (send chunk size?) size) (= (send chunk data?) data)))
     (abstract or)
@@ -133,4 +136,3 @@
     (if mutable
         (new chunk-immutable% [size size] [data data])
         (new chunk-mutable% [size size] [data data]))))
-
