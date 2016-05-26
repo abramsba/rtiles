@@ -69,3 +69,7 @@
 
 (define (json:value json key)
   (hash-ref json key))
+
+(define (hidepen dc)
+  (send dc set-pen "black" 0 'transparent) dc)
+
