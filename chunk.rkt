@@ -15,6 +15,7 @@
     (define/public (get-data) data)
     (define/public (get-bits) (expt size 2))
     (define/public (alive?) (not (= 0 data)))
+<<<<<<< HEAD
     
     (define/public (->indices)
       (let iter ([n 0]
@@ -25,6 +26,19 @@
                   (if (< 0 (bitwise-and (expt 2 n) data))
                       (cons n output)
                       output)))))
+=======
+
+    (define/public (->nlist)
+      (let iter ([n (send this bits?)]
+                 [output '()])
+        (if (zero? n)
+            output
+            (let ([k (- n 1)])
+              (iter k
+                    (if (bitwise-bit-set? data k)
+                        (cons k output)
+                        output))))))
+>>>>>>> 9e10fca8de6e6fe2e6bbd7549d3f16cd6076c596
 
     (define/public (->vecs)
       (map (λ (v)
