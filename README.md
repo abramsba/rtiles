@@ -2,6 +2,10 @@
 
 Create tilemaps using colors and characters.
 
+**Editor**
+
+![Editor](http://ht0x.nl:8000/27052016_0009.png)
+
 **32px tilesize**
 
 ![32px](images/32px.png)
