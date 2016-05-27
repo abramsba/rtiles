@@ -16,22 +16,27 @@
     (define/public (get-bits) (expt size 2))
     (define/public (alive?) (not (= 0 data)))
 
-    (define/public (->indices)
-      (let iter ([n 0]
+    (define/public (vec->index v)
+        (+ (* size (vec-y v)) (vec-x v)))
+    
+    (define/public (->indices [low 0][high (send this get-bits)])
+      (let iter ([n low]
                  [output '()])
-        (if (= n (send this get-bits))
+        (if (> n high)
             (reverse output)
             (iter (+ n 1)
                   (if (< 0 (bitwise-and (expt 2 n) data))
                       (cons n output)
                       output)))))
 
-    (define/public (->vecs)
+    (define/public (->vecs [low (vec 0 0)][high (vec size size)])
       (map (λ (v)
              (let-values ([(y x) (quotient/remainder v size)])
                (vec x y)))
-           (send this ->indices)))
-    
+           (send this ->indices
+                 (send this vec->index low)
+                 (send this vec->index high))))
+                   
     (define/public (equal? chunk)
       (and (= (send chunk get-size) size) (= (send chunk get-data) data)))
     (abstract or)
@@ -74,7 +79,8 @@
               (bitwise-xor rng data))))
     (define/override (fill)
       (set! data (sum-of-nrange 0 (send this get-bits))))
-    (define/override (empty) (set! data 0))))
+    (define/override (empty) (set! data 0))
+    ))
 
 (define chunk-immutable%
   (class chunk-base%
@@ -106,10 +112,6 @@
       (new chunk-immutable% [size size][data (sum-of-nrange 0 (send this get-bits))]))
     (define/override (empty)
       (new chunk-immutable% [size size][data 0]))))
-
-
-
-
 
 
 (define (vec->chunk size mutable . vec)

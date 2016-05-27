@@ -1,6 +1,9 @@
 #lang racket
 
-(require 
+(require
+  "layer.rkt"
+  "chunk.rkt"
+  "utils.rkt"
   racket/draw)
 
 (provide (all-defined-out) zone%)
@@ -11,6 +14,8 @@
     (field [layers (list)])
     (inspect (make-inspector))
     (super-new)
+
+    (define/public (get-id) id)
     
     (define/public (add-layer ly)
       (unless (eq? #t (send this has-layer? ly))
@@ -56,6 +61,15 @@
           ([json_layers (for/list ([l layers]) (send l ->jsexpr))])
         (hasheq 'id (symbol->string id)
                 'layers json_layers)))))
+
+(define (jsexpr->zone% json)
+  (let*
+      ([id (json:symbol json 'id)]
+       [layers (json:value json 'layers)]
+       [zone (new zone%[id id])])
+    (for ([l layers])
+      (send zone add-layer (jsexpr->layer% l)))
+    zone))
 
 (define (add-layers-to-zone zone . layers)
   (let*

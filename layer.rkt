@@ -152,10 +152,12 @@
     (define/public (<-vec . vec)
       (unless (send this locked?)
         (vec->chunk* chunk vec)))
+    
     (define/public (<-line . line)
       (unless (send this locked?)
         (for ([l (flatten line)])
           (vec->chunk* chunk (line->veclist l)))))
+    
     ))
 
 (define (jsexpr->layer% json)

@@ -11,7 +11,7 @@
     (field
      [size 1]
      [family 'default]
-     [face "Courier"]
+     [face "Sans"]
      [style 'normal]
      [weight 'normal]
      [underline #f]
