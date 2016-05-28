@@ -39,7 +39,7 @@
   (car (shuffle (send the-color-database get-names))))
 
 (define (random-unicode-char)
-  (integer->char (random #x2580 #x259F)))
+  (integer->char (random #x0400 #x04FF)))
 
 (define (random-noise size density)
   (let*
