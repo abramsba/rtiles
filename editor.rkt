@@ -2,7 +2,7 @@
 
 (require json "vec.rkt" "layer.rkt" "zone.rkt" "editorfuncs.rkt")
 
-(define editor-zone (random-zone 96 15 16))
+(define editor-zone (random-zone 96 2 16))
 (send (send editor-zone get-layer 'zl_0) lock)
 (send (send editor-zone get-layer 'zl_1) lock)
 (define zone-bitmap (send editor-zone ->zone.bmp 20))
@@ -20,19 +20,42 @@
                         [min-width 300]
                         [stretchable-width #f]
                         ))
+(define terminal-panel (new vertical-panel%
+                            [parent tool-panel]))
+
+(define terminal-buttons (new horizontal-panel%
+                              [parent tool-panel]
+                              [min-height 32]
+                              [stretchable-height #f]))
 
 (define zone-terminal (new editor-canvas%
-                           [parent tool-panel]
+                           [parent terminal-panel]
                            [style '(no-hscroll no-border auto-vscroll)]))
+(define zone-output-term (new editor-canvas%
+                              [parent terminal-panel]
+                              [style '(no-hscroll no-border auto-vscroll)]
+                              [min-height 100]
+                              [stretchable-height #f]))
+(define zone-output-text (new text%[auto-wrap #t]))
+(send zone-output-term set-editor zone-output-text)
+
+(define zone-terminal-run (new button%
+                               [parent terminal-buttons]
+                               [callback
+                                (λ (evt c)
+                                  (let*
+                                      ([code (format "(let () ~a)" (send text get-text))]
+                                       [res (eval (read (open-input-string code)))])
+                                    (send zone-output-text erase)
+                                    (send zone-output-text insert (format "~a" res))))]
+                               [label "Run"]))
+
 (define text (new text%[auto-wrap #t]))
 (define style-delta (make-object style-delta% 'change-normal-color))
-(send style-delta set-delta-background "black")
-(send style-delta set-delta-foreground "white")
+(send style-delta set-delta-face "Fixed")
+(send style-delta set-delta 'change-size 10)
 (send text change-style style-delta)
-(send text insert " > ")
 (send zone-terminal set-editor text)
-(define zone-terminal-dc (send zone-terminal get-dc))
-(send zone-terminal-dc draw-line 0 30 400 30)
 
 (define layer-panel (new vertical-panel%
                          [parent tool-panel]))

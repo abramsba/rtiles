@@ -118,8 +118,6 @@
           (send dc set-font (send font render))
           (send dc draw-text (string character)
                 (send font get-offset-x) (send font get-offset-y)))
-        (drawbg)
-        (drawfg)
         (when (not (zero? bg-alpha)) (drawbg))
         (when (not (or (zero? fg-alpha) (equal? #\  character))) (drawfg))
         bmp))
